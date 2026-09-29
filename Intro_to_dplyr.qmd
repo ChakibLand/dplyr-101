@@ -12,3 +12,17 @@ library(here)
 here::i_am("dplyr-101.Rproj")
 ```
  
+
+```{r}
+library(dplyr)
+library(ggplot2)
+data("diamonds")
+```
+
+
+```{r}
+ggplot(diamonds, aes(x=carat, y=price))+
+  geom_point()
+
+```
+
