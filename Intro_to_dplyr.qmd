@@ -11,7 +11,6 @@ format:
 library(here)
 here::i_am("dplyr-101.Rproj")
 ```
- 
 
 ```{r}
 library(dplyr)
@@ -25,4 +24,33 @@ ggplot(diamonds, aes(x=carat, y=price))+
   geom_point()
 
 ```
+
+
+## Selecting a subset of a dataset 
+
+```{r}
+ #| echo: true
+diamonds_2ct <- diamonds |>
+ filter(abs(carat - 2) < 0.1)
+```
+
+```{r}
+ggplot(diamonds_2ct, aes(x=carat, y=price))+
+  geom_point(color ="darkgreen" )
+
+```
+
+
+Pruces of 2 carat Diamonds 
+
+```{r}
+diamonds |> # Pime command maj M 
+  filter(carat >= 2, carat <= 2.1)|>
+  ggplot(aes(x=carat, y=price , group=carat))+ 
+  geom_boxplot()
+```
+
+
+
+
 
