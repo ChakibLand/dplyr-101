@@ -18,7 +18,7 @@ here::i_am("dplyr-101.Rproj")
 library(dplyr)
 library(ggplot2)
 data("diamonds")
-```
+``` 
 
 
 ```{r}
@@ -31,7 +31,7 @@ ggplot(diamonds, aes(x=carat, y=price))+
 ## Selecting a subset of a dataset 
 
 ```{r}
- #| echo: true
+#| echo: true
 diamonds_2ct <- diamonds |>
  filter(abs(carat - 2) < 0.1)
 ```
@@ -43,15 +43,25 @@ ggplot(diamonds_2ct, aes(x=carat, y=price))+
 ```
 
 
-Pruces of 2 carat Diamonds 
+## Prices of 2 carat Diamonds 
 
 ```{r}
-diamonds |> # Pime command maj M 
+diamonds |> # Pipe command maj M 
   filter(carat >= 2, carat <= 2.1)|>
-  ggplot(aes(x=carat, y=price , group=carat))+ 
+  ggplot(aes(x=carat, y=price , group=carat)) + 
   geom_boxplot()
 ```
 
+
+## Prices of 2 carat Diamonds 
+
+
+```{r}
+diamonds |> # Pipe command maj M 
+  filter(carat >= 2, carat <= 2.1)|>
+  ggplot(aes(x=carat, y=price , group=carat)) + 
+  geom_violin()
+```
 
 
 
