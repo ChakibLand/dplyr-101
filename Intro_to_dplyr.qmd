@@ -64,5 +64,334 @@ diamonds |> # Pipe command maj M
 ```
 
 
+## Using filter {.smaller}
+
+Filter is used as follows
+
+```{r}
+#| eval: false
+#| echo: true
+filter(dataframe, expression with a logical value)
+```
+
+Interpretation: the code keeps the rows of the data frame for which the expression evaluates to `TRUE`.
+
+```{r}
+filter(diamonds, price == 1000) |>
+  ggplot(aes(y=cut)) +
+    geom_bar()
+```
+
+## Multiple logical expressions {.smaller}
+
+::::: columns
+::: {.column width="40%"}
+Filter can be used as follows
+
+```{r}
+#| eval: false
+#| echo: true
+filter(dataframe, exp1, exp2, exp3)
+```
+
+Interpretation: the code keeps the rows of the data frame for which all expressions evaluate to `TRUE`.
+:::
+
+::: {.column width="60%"}
+```{r}
+filter(diamonds, price == 1000, cut == "Ideal" ) |>
+  ggplot(aes(y=color)) +
+    geom_bar()
+```
+:::
+:::::
+
+# Logical expressions
+
+## Comparison operators
+
+Everything that compares two values and returns `TRUE` or `FALSE`.
+
+```{r}
+#| echo: true
+x <- 2
+x == 2
+x >= 3
+```
+
+List: `<`, `<=`, `==`, `>=`, `>` and `!=`
+
+## Logical operators
+
+Combining true value.
+
+```{r}
+#| echo: true
+TRUE & FALSE
+TRUE | FALSE
+!FALSE
+```
+
+- `|` logical OR
+- `&` logical AND
+- `!` logical NOT
+
+## Examples
+
+Two equivalent filter operations:
+
+```{r}
+#| echo: true
+#| eval: false
+diamonds |> filter(price == 1000, cut == "Ideal") 
+diamonds |> filter( (price == 1000) & (cut == "Ideal") ) 
+```
+
+Two different filter operations:
+
+```{r}
+#| echo: true
+#| eval: false
+diamonds |> filter(price == 1000, cut == "Ideal") 
+diamonds |> filter( (price == 1000) | (cut == "Ideal") ) 
+```
+
+# Introduction to `summarise`
+
+## Global summaries
+
+```{r}
+#| echo: true
+diamonds |> 
+  summarise(mean(price), median(price))
+```
+
+`summarise` is used as follows:
+
+```{r}
+#| eval: false
+#| echo: true
+summarise(dataframe, expression based on an aggregation function)
+```
+
+The result is a data frame with one column per expression and one row.
+
+## Aggregation functions {.smaller}
+
+::::: columns
+::: {.column width="50%"}
+An aggregation function computes a statistics (in a broad sense) on a numerical vector, for instance
+
+- `mean`
+- `median`
+- `sd`: standard deviation
+- `var`: variance
+- `max` and `min`
+:::
+
+::: {.column width="50%"}
+```{r}
+#| echo: true
+x <- c(-0.1, 1, 2, 2, -3, 5)
+mean(x)
+median(x)
+sd(x)
+min(x)
+n_distinct(x)
+length(x)
+```
+:::
+:::::
+
+## Limitations of `summarise` {.smaller}
+
+Aggregation functions are mostly limited to numerical values (and to logical ones to some extent). Aggregation functions for non numerical vectors generally output multiple values.
+
+```{r}
+#| echo: true
+y <- c("A", "A", "B", "C", "A", "B", "C", "C", "D")
+table(y)
+```
+
+```{r}
+#| echo: true
+diamonds |> 
+  pull(cut) |>
+  table()
+```
+
+This generates an error because the aggregation contains multiple values.
+
+```{r}
+#| echo: true
+#| eval: false
+diamonds |>
+  summarise(table(cut))
+```
+
+## Renaming the resulting columns
+
+```{r}
+#| echo: true
+diamonds |> 
+  summarise(mean_price = mean(price), 
+            median_price = median(price), 
+            interquartile_price = IQR(price))
+```
+
+In many dplyr verbs, one can give to an expression a name in the form `name=expression`. The name will be used for the corresponding column.
+
+# Grouped operations
+
+## Grouped summaries {.smaller}
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+#| echo: true
+diamonds |>
+  summarise(median_price = median(price), 
+            .by = cut)
+```
+:::
+
+::: {.column width="50%"}
+Effects of `.by`
+
+1)  split the data frame into as many sub-data frames as values taken by the `.by` variable
+2)  apply the aggregation functions to each sub-data frame
+3)  glue together the resulting one row data frames
+4)  add a column to identify the subsets
+:::
+:::::
+
+## Manual calculation for one value
+
+```{r}
+#| echo: true
+diamonds |>
+  filter(cut == "Ideal") |>
+  summarise(median_price = median(price))
+```
+
+## Graphical investigation
+
+```{r}
+ggplot(diamonds, aes(x=price, colour = cut)) +
+  geom_density(bw="sj", linewidth = 1, alpha = 0.75)
+```
+
+## Additional statistics
+
+Statistics summarising the price distribution given the cut.
+
+```{r}
+diamonds |>
+  summarise(median = median(price), 
+            mean = mean(price),
+            sd = sd(price),
+            IQR = IQR(price),
+            .by = cut) |>
+  arrange(cut)
+```
+
+## Counting stuff
+
+::::: columns
+::: {.column width="50%"}
+```{r}
+#| echo: true
+diamonds |> 
+  summarise(count = n(), 
+            .by = cut)
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| echo: true
+diamonds |> 
+  group_by(cut) |> 
+  summarise(count = n())
+```
+:::
+:::::
+
+## Dependencies
+
+A standard way to assess dependency between two numerical variables is Pearson's correlation coefficient: `cor`.
+
+::::: columns
+::: {.column width="50%"}
+
+```{r}
+diamonds |>
+  summarise(cor(carat, price))
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+diamonds |>
+  summarise(cor(carat, price), .by=cut)
+```
+:::
+:::::
+
+
+
+
+## Dependencies (non numerical) {.smaller}
+
+```{r}
+diamonds |>
+  ggplot(aes(x=cut, fill=color)) +
+  geom_bar(position="stack")
+```
+
+## Dependencies (non numerical)
+
+```{r}
+diamonds |>
+  summarise(n(), .by=c(cut, color)) |>
+  slice(1:5) ## first five rows
+```
+
+# Operating on columns
+
+## Introduction to `mutate`
+
+The `mutate` verb is used to create new columns (or to modify existing ones)
+based on calculation conducted on existing columns. Generic form:
+
+```{r}
+#| echo: true
+#| eval: false
+mutate(dataframe, newcolumn = expression)
+```
+
+
+```{r}
+#| echo: true
+diamonds_ppc <- diamonds |>
+  mutate("price per carat" = price/carat)
+```
+
+## Application example
+
+```{r}
+diamonds_ppc |>
+  summarise(median(`price per carat`), .by=cut) |>
+  arrange(cut)
+```
+
+## Application example (graphical)
+
+```{r}
+diamonds_ppc |>
+  ggplot(aes(x=`price per carat`, colour = cut)) +
+  geom_density(bw="sj", linewidth = 1, alpha = 0.75)
+```
+
 
 
