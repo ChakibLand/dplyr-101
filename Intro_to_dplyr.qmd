@@ -20,11 +20,12 @@ library(ggplot2)
 data("diamonds")
 ``` 
 
+# Introduction to `filter`
 
+## Link between diamond carat and price
 ```{r}
 ggplot(diamonds, aes(x=carat, y=price))+
   geom_point()
-
 ```
 
 
@@ -33,7 +34,7 @@ ggplot(diamonds, aes(x=carat, y=price))+
 ```{r}
 #| echo: true
 diamonds_2ct <- diamonds |>
- filter(abs(carat - 2) < 0.1)
+ filter(abs(carat - 2) <= 0.1)
 ```
 
 ```{r}
@@ -41,6 +42,25 @@ ggplot(diamonds_2ct, aes(x=carat, y=price))+
   geom_point(color ="darkgreen" )
 
 ```
+
+
+
+```{r}
+nb_diamonds_near_2 <- diamonds_2ct |> nrow()
+nb_diamonds_below_2 <- diamonds_2ct |>
+  filter(carat< 2) |> 
+  nrow()
+```
+
+
+## Gap in the distribution
+
+There are:
+
+- `r nb_diamonds_below_2` diamonds with weight between 1.9 and 1.99 carats
+- `r nb_diamonds_near_2-nb_diamonds_below_2` diamonds with weight between 2 and 2.1 carats
+
+There is a clear gap in the distribution of the weights, with a very small number of diamonds just before 2 carats compared to the number of them just after 2 carats.
 
 
 ## Prices of 2 carat Diamonds 
@@ -71,7 +91,7 @@ Filter is used as follows
 ```{r}
 #| eval: false
 #| echo: true
-filter(dataframe, expression with a logical value)
+# filter(dataframe, expression with a logical value)
 ```
 
 Interpretation: the code keeps the rows of the data frame for which the expression evaluates to `TRUE`.
@@ -171,9 +191,10 @@ diamonds |>
 ```{r}
 #| eval: false
 #| echo: true
-summarise(dataframe, expression based on an aggregation function)
+# summarise(dataframe, expression based on an aggregation function)
 ```
 
+Aggregation function = function that take a lot of element and return one result
 The result is a data frame with one column per expression and one row.
 
 ## Aggregation functions {.smaller}
@@ -266,6 +287,13 @@ Effects of `.by`
 :::::
 
 ## Manual calculation for one value
+```{r}
+diamonds |>
+filter (cut == "Ideal")  |>
+  pull(price) |> 
+  median()
+```
+
 
 ```{r}
 #| echo: true
@@ -292,7 +320,7 @@ diamonds |>
             sd = sd(price),
             IQR = IQR(price),
             .by = cut) |>
-  arrange(cut)
+  arrange(cut) #range de la moins bonne a la meilleur qualité 
 ```
 
 ## Counting stuff
@@ -304,7 +332,15 @@ diamonds |>
 diamonds |> 
   summarise(count = n(), 
             .by = cut)
+#n compte le nombre de ligne 
 ```
+
+```{r}
+diamonds |> 
+  summarise(count= n(),
+            .by =color)
+```
+
 :::
 
 ::: {.column width="50%"}
@@ -338,9 +374,6 @@ diamonds |>
 :::
 :::::
 
-
-
-
 ## Dependencies (non numerical) {.smaller}
 
 ```{r}
@@ -354,7 +387,7 @@ diamonds |>
 ```{r}
 diamonds |>
   summarise(n(), .by=c(cut, color)) |>
-  slice(1:5) ## first five rows
+  slice(1:10) ## first five rows
 ```
 
 # Operating on columns
